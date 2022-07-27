@@ -1,5 +1,5 @@
 const express = require('express');
-
+const stuffRoutes = require('./routes/stuff');
 const mongoose = require('mongoose');
 
 const Thing = require('./models/thing');
@@ -11,6 +11,8 @@ mongoose.connect('mongodb+srv://RoiVegetto:Iphone3g62.@cluster0.yqatado.mongodb.
   .catch(() => console.log('Connexion à MongoDB échouée !'));
 
 const app = express();
+
+app.use('/api/stuff', stuffRoutes);
 
 app.use((req, res) => {
     res.json({ message: 'Votre message a bien été reçu !'});
