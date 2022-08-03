@@ -2,6 +2,7 @@ const express = require('express');
 const stuffRoutes = require('./routes/stuff');
 const mongoose = require('mongoose');
 const path = require('path');
+const userRoutes = require('./routes/user')
 
 const Thing = require('./models/thing');
 
