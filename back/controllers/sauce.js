@@ -9,7 +9,11 @@ exports.createSauce = (req, res, next) => {
   const sauce = new Sauce({
       ...sauceObject,
       userId: req.auth.userId,
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
+      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+      likes: 0,
+      dislikes: 0,
+      usersLiked: [' '],
+      usersdisLiked: [' '],
   });
 
   sauce.save()
@@ -86,4 +90,60 @@ exports.getAllSauce = (req, res, next) => {
       });
     }
   );
-};
+
+  exports.onLike = (req, res, next) => {
+    Sauce.findOne({ _id: req.params.id })
+    .then((sauce) => {
+        if (!sauce) {
+        return res.status(404).json({
+            error: new Error("Cette sauce n'existe pas"),
+        });
+        };
+        
+        const userLikeIndex = sauce.usersLiked.findIndex(
+        (userId) => userId == req.body.userId
+        );
+        const userDislikeIndex = sauce.usersDisliked.findIndex(
+        (userId) => userId == req.body.userId
+        );
+        if (req.body.like === 1) {
+          if (userLikeIndex !== -1) {
+              return res.status(500).json({
+              error: new Error("Vous avez déjà liké cette sauce"),
+              });
+        }
+          if (userDislikeIndex !== -1) {
+              sauce.usersDisliked.splice(userDislikeIndex, 1);
+              sauce.dislikes--;
+          }
+      sauce.usersLiked.push(req.body.userId);
+      sauce.likes++;
+    }
+    if (req.body.like === -1) {
+      if (userDislikeIndex !== -1) {
+        return res.status(500).json({
+          error: new Error("Vous avez déjà disliké cette sauce"),
+        });
+      }
+      if (userLikeIndex !== -1) {
+        sauce.usersLiked.splice(userLikeIndex, 1);
+        sauce.likes--;
+      }
+      sauce.usersDisliked.push(req.body.userId);
+      sauce.dislikes++;
+    }
+    if (req.body.like === 0) {
+      if (userDislikeIndex !== -1) {
+        sauce.usersDisliked.splice(userDislikeIndex, 1);
+        sauce.dislikes--;
+      }
+      else if (userLikeIndex !== -1) {
+        sauce.usersLiked.splice(userLikeIndex, 1);
+        sauce.likes--;
+      }
+    }
+    Sauce.updateOne({ _id: req.params.id }, sauce).then(() => {
+      res.status(200).json({ message: "Avis enregistré !" });
+    });
+  });
+  }}
