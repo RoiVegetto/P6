@@ -1,53 +1,52 @@
 const User = require('../models/User');
+const Sauce = require('../models/sauce');
 
-exports.likeSauce = (req, res, next) => {
-  User
-  .findOne({_id : req.params.id})
-  .then((objet) => {
-    if(!objet.usersLiked.includes(req.body.userId) && req.body.likes === 1){
-// Mise a jour de l'objet BDD
-    User.updateOne(
-      {_id : req.params.id},
-      {
-        $inc: {likes: 1},
-        $push: {usersLiked: req.body.userId}
-      }
-  )
+exports.likeSauce = async (req, res, next) => {
 
-.then(() => res.status(201).json({message: "User like +1"}))
-.catch((error) => res.status(400).json({error}));
-};
+    const userId = req.auth.userId;
+    const sauce = await Sauce.findOne({_id : req.params.id})
 
-  if(!objet.usersLiked.includes(req.body.userId) && req.body.likes === 1){
-// Mise a jour de l'objet BDD
-  User.updateOne(
-    {_id : req.params.id},
-    {
-      $inc: {likes: -1},
-      $pull: {usersLiked: req.body.userId}
+    if(!sauce){
+        return res.status(404).json({error : 'Ressources not found'});
     }
-  )
 
-.then(() => res.status(201).json({message: "User like +1"}))
-.catch((error) => res.status(400).json({error}));
+    // Dislike
+    if(req.body.like === -1){
 
-};
-
-if(!objet.usersDisLiked.includes(req.body.userId) && req.body.likes === -1){
-  // Mise a jour de l'objet BDD
-      User.updateOne(
-        {_id : req.params.id},
-        {
-          $inc: {dislikes: 1},
-          $push: {usersDisLiked: req.body.userId}
+        if(!sauce.usersDisliked.includes(userId)){
+            sauce.dislikes += 1;
+            sauce.usersDisliked.push(userId);
         }
-    )
-  
-  .then(() => res.status(201).json({message: "User dislike +1"}))
-  .catch((error) => res.status(400).json({error}));
-  };
 
-})
-.catch((error) => res.status(404).json({error}));
+        sauce.save()
 
-}
+        return res.status(200).json({ dislike : true });
+
+    }
+    else if(req.body.like === 1){
+        // Like
+        if(!sauce.usersLiked.includes(userId)){
+            sauce.likes += 1;
+            sauce.usersLiked.push(userId);
+        }
+
+        sauce.save()
+
+        return res.status(200).json({ liked : true });
+    }
+    else{
+        if(sauce.usersLiked.includes(userId)){
+            sauce.likes -= 1;
+            sauce.usersLiked = sauce.usersLiked.filter(id => id !== userId);
+        }
+
+        if(sauce.usersDisliked.includes(userId)){
+            sauce.dislikes -= 1;
+            sauce.usersDisliked = sauce.usersDisliked.filter(id => id !== userId);
+        }
+
+        sauce.save()
+
+        return res.status(200).json({ liked : false, dislikes : false });
+    }
+};
