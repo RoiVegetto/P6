@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-exports.likeUser = (req, res, next) => {
+exports.likeSauce = (req, res, next) => {
   User
   .findOne({_id : req.params.id})
   .then((objet) => {
