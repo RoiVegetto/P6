@@ -1,10 +1,10 @@
 const User = require('../models/User');
 
-exports.likeFicheUser = (req, res, next) => {
+exports.likeUser = (req, res, next) => {
   User
   .findOne({_id : req.params.id})
   .then((objet) => {
-    if(!objet.usersLiked.includes(req.body.userId) && req.body.like === 1){
+    if(!objet.usersLiked.includes(req.body.userId) && req.body.likes === 1){
 // Mise a jour de l'objet BDD
     User.updateOne(
       {_id : req.params.id},
@@ -18,7 +18,7 @@ exports.likeFicheUser = (req, res, next) => {
 .catch((error) => res.status(400).json({error}));
 };
 
-  if(!objet.usersLiked.includes(req.body.userId) && req.body.like === 1){
+  if(!objet.usersLiked.includes(req.body.userId) && req.body.likes === 1){
 // Mise a jour de l'objet BDD
   User.updateOne(
     {_id : req.params.id},
@@ -33,7 +33,7 @@ exports.likeFicheUser = (req, res, next) => {
 
 };
 
-if(!objet.usersDisLiked.includes(req.body.userId) && req.body.like === -1){
+if(!objet.usersDisLiked.includes(req.body.userId) && req.body.likes === -1){
   // Mise a jour de l'objet BDD
       User.updateOne(
         {_id : req.params.id},
